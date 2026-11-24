@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b1f3a">
+<title>Ludo — Created by Himanshu Singh</title>
+<style>
+:root{
+  --red:#e53935; --green:#2e9e45; --yellow:#fdd835; --blue:#1e88e5;
+  --bg:#1b1f3a; --panel:#262b50; --ink:#f4f5ff; --muted:#a9aed6;
+  --bsize:min(94vw, calc(100vh - 280px));
+}
+@supports (height:100dvh){ :root{ --bsize:min(94vw, calc(100dvh - 280px)); } }
+@media (min-aspect-ratio:1/1) and (min-width:760px){
+  :root{ --bsize:min(calc(100vh - 110px), calc(100vw - 380px), 780px); }
+}
+@supports (height:100dvh){
+  @media (min-aspect-ratio:1/1) and (min-width:760px){
+    :root{ --bsize:min(calc(100dvh - 110px), calc(100vw - 380px), 780px); }
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:radial-gradient(circle at 50% 0%,#2b3166,#141831 70%);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer}
+.hidden{display:none !important}
+.screen{min-height:100vh;display:flex;flex-direction:column;align-items:center}
+@supports (height:100dvh){ .screen{min-height:100dvh} }
+
+/* ---------- start screen ---------- */
+#start-screen{justify-content:center;padding:16px}
+.card{width:min(94vw,460px);background:var(--panel);border-radius:20px;padding:22px 20px;box-shadow:0 16px 50px rgba(0,0,0,.45);text-align:center}
+.logo{margin:0;font-size:56px;letter-spacing:10px;font-weight:900;
+  background:linear-gradient(90deg,var(--red),var(--yellow),var(--green),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tag{margin:4px 0 16px;color:var(--muted);font-size:14px}
+.presets{display:flex;gap:8px;justify-content:center;margin-bottom:12px;flex-wrap:wrap}
+.chip{padding:8px 14px;border-radius:999px;border:2px solid #4a5090;background:transparent;font-weight:600}
+.chip.on{background:#4a5090}
+.seat{display:flex;align-items:center;gap:10px;margin:8px 0;padding:8px 10px;border-radius:12px;background:#1d2145}
+.seat .dot{width:22px;height:22px;border-radius:50%;background:var(--c);box-shadow:inset 0 -3px 5px rgba(0,0,0,.35),inset 0 3px 5px rgba(255,255,255,.4)}
+.seat .nm{width:64px;text-align:left;font-weight:700}
+.seg{display:flex;flex:1;gap:4px}
+.seg button{flex:1;padding:8px 4px;border-radius:8px;border:2px solid #3b4180;background:transparent;font-size:13px;font-weight:600}
+.seg button.on{background:var(--c);border-color:var(--c);color:#111}
+.hint{min-height:1.3em;margin:8px 0;color:var(--muted);font-size:13px}
+.hint.err{color:#ff8a80}
+.btn{padding:12px 28px;border-radius:12px;border:0;font-weight:800;font-size:16px;background:#4a5090}
+.btn.primary{background:linear-gradient(180deg,#ffd54f,#fb8c00);color:#2b1a00}
+.credit{margin:16px 0 0;font-size:13px;color:var(--muted)}
+
+/* ---------- game screen ---------- */
+#game-screen{padding:8px 0 4px;justify-content:flex-start}
+.topbar{width:min(94vw,1100px);display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.topbar h2{margin:0;letter-spacing:6px;font-size:22px}
+.topbar button{margin-left:6px;padding:6px 12px;border-radius:8px;border:2px solid #4a5090;background:transparent;font-size:13px}
+.game{display:flex;flex-direction:column;align-items:center;gap:10px}
+@media (min-aspect-ratio:1/1) and (min-width:760px){
+  .game{flex-direction:row;align-items:flex-start;gap:20px}
+}
+.panel{width:var(--bsize);display:flex;flex-direction:column;gap:10px}
+@media (min-aspect-ratio:1/1) and (min-width:760px){ .panel{width:320px} }
+.players{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.pcard{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;background:var(--panel);border:2px solid transparent;font-size:13px}
+.pcard .dot{width:16px;height:16px;border-radius:50%;background:var(--c);flex:none}
+.pcard small{display:block;color:var(--muted);font-size:11px}
+.pcard.active{border-color:var(--c);box-shadow:0 0 12px var(--c)}
+.pcard.done{opacity:.55}
+.dice-row{display:flex;align-items:center;gap:14px}
+.dice{position:relative;flex:none;width:76px;height:76px;border-radius:16px;background:#fff;border:4px solid var(--c,#888);
+  box-shadow:0 6px 14px rgba(0,0,0,.4),inset 0 -4px 8px rgba(0,0,0,.12);padding:0}
+.dice .dots{position:absolute;inset:10px;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);gap:2px}
+.dice .dots i{border-radius:50%;background:transparent}
+.dice .dots i.on{background:radial-gradient(circle at 35% 30%,#555,#111)}
+.dice .lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:900;color:#333;font-size:15px;letter-spacing:1px}
+.dice.ready{animation:pulse .8s ease-in-out infinite;cursor:pointer}
+.dice:disabled{cursor:default}
+#status{flex:1;min-height:3em;font-size:15px;line-height:1.35}
+.footer{margin-top:auto;padding:10px;font-size:13px;color:var(--muted);text-align:center}
+
+/* ---------- board ---------- */
+.board{position:relative;width:var(--bsize);aspect-ratio:1/1;display:grid;grid-template-columns:repeat(15,1fr);grid-template-rows:repeat(15,1fr);
+  background:#fff;border:4px solid #0d1024;border-radius:12px;overflow:hidden;box-shadow:0 14px 40px rgba(0,0,0,.55)}
+.cell{position:relative;background:#fff;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center}
+.cell.start-red,.cell.hc-red{background:var(--red)}
+.cell.start-green,.cell.hc-green{background:var(--green)}
+.cell.start-yellow,.cell.hc-yellow{background:var(--yellow)}
+.cell.start-blue,.cell.hc-blue{background:var(--blue)}
+.cell svg.star{width:72%;height:72%;display:block}
+.yard{position:relative}
+.yard-red{background:var(--red)} .yard-green{background:var(--green)}
+.yard-yellow{background:var(--yellow)} .yard-blue{background:var(--blue)}
+.yard-inner{position:absolute;inset:16.667%;background:#fff;border-radius:12%;box-shadow:inset 0 0 0 2px rgba(0,0,0,.18)}
+.slot{position:absolute;width:19%;aspect-ratio:1/1;border-radius:50%;transform:translate(-50%,-50%);
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.5),var(--sc) 60%);box-shadow:inset 0 3px 6px rgba(0,0,0,.4)}
+.yard.off{filter:grayscale(1) opacity(.4)}
+.yard.active .yard-inner{box-shadow:inset 0 0 0 4px var(--sc),0 0 18px 4px var(--sc)}
+.center{grid-row:7 / span 3;grid-column:7 / span 3}
+.center svg{width:100%;height:100%;display:block}
+.tokens{position:absolute;inset:0;pointer-events:none;z-index:5}
+.token{position:absolute;padding:0;border:0;background:none;pointer-events:none;
+  transition:left .15s linear,top .15s linear,width .2s,height .2s}
+.token svg{width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 2px 1.5px rgba(0,0,0,.5))}
+.token.movable{animation:pulse .8s ease-in-out infinite}
+.token.movable::before{content:"";position:absolute;inset:-6%;border-radius:50%;border:3px solid #fff;
+  box-shadow:0 0 10px 3px #ffd54f,inset 0 0 6px #ffd54f}
+.token.movable.human{pointer-events:auto;cursor:pointer}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
+
+/* ---------- modal ---------- */
+.modal{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(5,7,20,.72);padding:16px}
+.modal .card{animation:pop .25s ease-out}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.modal h3{margin:0 0 8px;font-size:26px}
+.modal p{margin:6px 0;color:var(--muted)}
+.modal ol{text-align:left;margin:10px auto;padding-left:34px;max-width:260px}
+.modal .acts{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+</style>
+</head>
+<body>
+
+<!-- shared gradient defs for the glossy pawns (filled in by JS) -->
+<svg id="defs" width="0" height="0" style="position:absolute" aria-hidden="true"><defs id="defs-inner"></defs></svg>
+
+<main id="app">
+  <section id="start-screen" class="screen">
+    <div class="card">
+      <h1 class="logo">LUDO</h1>
+      <p class="tag">Classic board game · plays fully offline</p>
+      <div class="presets" id="presets"></div>
+      <div id="seat-list"></div>
+      <p id="setup-msg" class="hint"></p>
+      <button id="btn-start" class="btn primary">Start Game</button>
+      <p class="credit">Created by Himanshu Singh</p>
+    </div>
+  </section>
+
+  <section id="game-screen" class="screen hidden">
+    <header class="topbar">
+      <h2>LUDO</h2>
+      <div><button id="btn-restart">Restart</button><button id="btn-menu">Menu</button></div>
+    </header>
+    <div class="game">
+      <div class="board-wrap"><div id="board" class="board" aria-label="Ludo board"></div></div>
+      <aside class="panel">
+        <div id="players" class="players"></div>
+        <div class="dice-row">
+          <button id="dice" class="dice" aria-label="Roll dice"></button>
+          <div id="status" role="status" aria-live="polite"></div>
+        </div>
+      </aside>
+    </div>
+    <footer class="footer">Created by Himanshu Singh</footer>
+  </section>
+</main>
+
+<div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="card">
+    <h3 id="modal-title"></h3>
+    <div id="modal-body"></div>
+    <div class="acts" id="modal-acts"></div>
+    <p class="credit">Created by Himanshu Singh</p>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* =====================================================================
+   PHASE 2 HOOKS — intentionally empty. Attach audio / persistence here.
+   The game logic below calls these by name; it never depends on them.
+   ===================================================================== */
+function onDiceRoll(value, color) {}
+function onTokenHop(color, tokenIndex, fromPos, toPos) {}
+function onCapture(attackerColor, victims) {}
+function onVictory(color, place) {}
+function onStateChange(newState, oldState) {}
+
+/* =====================================================================
+   GEOMETRY — explicit, verified [row, col] coordinate tables
+   ===================================================================== */
+const COLORS = ['red', 'green', 'yellow', 'blue'];           // clockwise order
+const OPPOSITE = { red: 'yellow', yellow: 'red', green: 'blue', blue: 'green' };
+const COLOR_META = {
+  red:    { name: 'Red',    l: '#ff8a80', m: '#e53935', d: '#8e0000' },
+  green:  { name: 'Green',  l: '#a5d6a7', m: '#2e9e45', d: '#1b5e20' },
+  yellow: { name: 'Yellow', l: '#fff59d', m: '#fbc02d', d: '#a67c00' },
+  blue:   { name: 'Blue',   l: '#90caf9', m: '#1e88e5', d: '#0d3c8a' }
+};
+
+// 52 squares, clockwise. Index 0 = Red start square.
+const TRACK = [
+  [6,1],[6,2],[6,3],[6,4],[6,5],                    //  0- 4  row 6, heading right
+  [5,6],[4,6],[3,6],[2,6],[1,6],[0,6],              //  5-10  col 6, heading up
+  [0,7],[0,8],                                       // 11-12  top edge
+  [1,8],[2,8],[3,8],[4,8],[5,8],                    // 13-17  col 8, heading down
+  [6,9],[6,10],[6,11],[6,12],[6,13],[6,14],         // 18-23  row 6, heading right
+  [7,14],[8,14],                                     // 24-25  right edge
+  [8,13],[8,12],[8,11],[8,10],[8,9],                // 26-30  row 8, heading left
+  [9,8],[10,8],[11,8],[12,8],[13,8],[14,8],         // 31-36  col 8, heading down
+  [14,7],[14,6],                                     // 37-38  bottom edge
+  [13,6],[12,6],[11,6],[10,6],[9,6],                // 39-43  col 6, heading up
+  [8,5],[8,4],[8,3],[8,2],[8,1],[8,0],              // 44-49  row 8, heading left
+  [7,0],[6,0]                                        // 50-51  left edge
+];
+const START = { red: 0, green: 13, yellow: 26, blue: 39 };   // track index of each start square
+const STAR_INDICES = [8, 21, 34, 47];                         // start + 8 steps
+const SAFE = new Set([...Object.values(START), ...STAR_INDICES]);
+const HOME_COL = {                                            // 5 squares each, outermost first
+  red:    [[7,1],[7,2],[7,3],[7,4],[7,5]],
+  green:  [[1,7],[2,7],[3,7],[4,7],[5,7]],
+  yellow: [[7,13],[7,12],[7,11],[7,10],[7,9]],
+  blue:   [[13,7],[12,7],[11,7],[10,7],[9,7]]
+};
+const YARD_ORIGIN = { red: [0,0], green: [9,0], yellow: [9,9], blue: [0,9] };   // [x, y] in cells
+const YARD_SLOTS = [[2,2],[4,2],[2,4],[4,4]];
+const HOME_SPOT = {   // centre of each colour's triangle + axis the finished tokens line up on
+  red:    { x: 6.45, y: 7.5,  ax: 'y' },
+  green:  { x: 7.5,  y: 6.45, ax: 'x' },
+  yellow: { x: 8.55, y: 7.5,  ax: 'y' },
+  blue:   { x: 7.5,  y: 8.55, ax: 'x' }
+};
+
+// Token progress: -1 = yard, 0..50 = outer track (relative to own start), 51..55 = home column, 56 = home triangle
+const YARD = -1, LAST_TRACK = 50, HOME_POS = 56;
+
+function trackIndex(color, pos) { return (START[color] + pos) % 52; }
+function cellFor(color, pos) {
+  if (pos >= 0 && pos <= LAST_TRACK) return TRACK[trackIndex(color, pos)];
+  if (pos > LAST_TRACK && pos < HOME_POS) return HOME_COL[color][pos - LAST_TRACK - 1];
+  return null;
+}
+function adjacent(a, b) { return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) === 1; }
+
+// Returns a list of error strings (empty = geometry is consistent).
+function verifyGeometry() {
+  const errs = [];
+  const seen = new Set(TRACK.map(p => p.join(',')));
+  if (TRACK.length !== 52) errs.push('track length ' + TRACK.length);
+  if (seen.size !== 52) errs.push('duplicate track squares');
+  // A real Ludo board has exactly four diagonal steps, one at each inner corner of the cross.
+  const DIAGONAL_STEPS = [4, 17, 30, 43];
+  for (let i = 0; i < 52; i++) {
+    const a = TRACK[i], b = TRACK[(i + 1) % 52];
+    const diag = Math.abs(a[0] - b[0]) === 1 && Math.abs(a[1] - b[1]) === 1;
+    if (DIAGONAL_STEPS.includes(i) ? !diag : !adjacent(a, b)) errs.push('gap between track ' + i + ' and ' + ((i + 1) % 52));
+  }
+  COLORS.forEach(c => {
+    const entry = (START[c] + LAST_TRACK) % 52;                 // last outer square before the home column
+    if (!adjacent(TRACK[entry], HOME_COL[c][0])) errs.push(c + ': track ' + entry + ' does not touch its home column');
+    if (HOME_COL[c].length !== 5) errs.push(c + ': home column length');
+    for (let i = 0; i < 4; i++) if (!adjacent(HOME_COL[c][i], HOME_COL[c][i + 1])) errs.push(c + ': home column gap ' + i);
+    const last = HOME_COL[c][4];
+    if (last[0] < 6 || last[0] > 8 || last[1] < 6 || last[1] > 8) {
+      // last square must touch the centre 3x3
+      const touches = [[1,0],[-1,0],[0,1],[0,-1]].some(d => { const r = last[0] + d[0], k = last[1] + d[1]; return r >= 6 && r <= 8 && k >= 6 && k <= 8; });
+      if (!touches) errs.push(c + ': home column does not reach the centre');
+    }
+    // wrap-around: the square just before start (index start-1 mod 52) must touch the start square
+    if (!adjacent(TRACK[(START[c] + 51) % 52], TRACK[START[c]])) errs.push(c + ': wrap-around before start');
+    // the track square never appears in its own home column
+    if (HOME_COL[c].some(h => seen.has(h.join(',')))) errs.push(c + ': home column overlaps track');
+  });
+  STAR_INDICES.forEach((s, i) => { if ((START[COLORS[i]] + 8) % 52 !== s) errs.push('star ' + s + ' is not start+8'); });
+  return errs;
+}
+
+/* =====================================================================
+   RULES — pure functions over a tokens map { color: [pos x4] }
+   ===================================================================== */
+const Rules = {
+  legalMoves(tokens, color, roll) {
+    const out = [];
+    tokens[color].forEach((p, i) => {
+      if (p === YARD) { if (roll === 6) out.push(i); }
+      else if (p < HOME_POS && p + roll <= HOME_POS) out.push(i);      // exact finish only
+    });
+    return out;
+  },
+  destination(pos, roll) { return pos === YARD ? 0 : pos + roll; },
+  // Opponent tokens that would be captured by `color` landing on `pos` (none on safe squares / home column).
+  victimsAt(tokens, colors, color, pos) {
+    if (pos < 0 || pos > LAST_TRACK) return [];
+    const idx = trackIndex(color, pos);
+    if (SAFE.has(idx)) return [];
+    const out = [];
+    colors.forEach(o => {
+      if (o === color) return;
+      tokens[o].forEach((q, i) => {
+        if (q >= 0 && q <= LAST_TRACK && trackIndex(o, q) === idx) out.push({ color: o, index: i, pos: q });
+      });
+    });
+    return out;
+  },
+  // How many opponent tokens sit 1..6 squares behind `pos` and could still reach it on the outer track.
+  threats(tokens, colors, color, pos, ignoreSafe) {
+    if (pos < 0 || pos > LAST_TRACK) return 0;
+    const idx = trackIndex(color, pos);
+    if (!ignoreSafe && SAFE.has(idx)) return 0;
+    let n = 0;
+    colors.forEach(o => {
+      if (o === color) return;
+      tokens[o].forEach(q => {
+        if (q < 0 || q > LAST_TRACK) return;
+        const d = (idx - trackIndex(o, q) + 52) % 52;
+        if (d >= 1 && d <= 6 && q + d <= LAST_TRACK) n++;
+      });
+    });
+    return n;
+  },
+  allHome(tokens, color) { return tokens[color].every(p => p === HOME_POS); }
+};
+
+/* =====================================================================
+   HEURISTIC AI — deterministic (ties go to the lowest token index)
+   ===================================================================== */
+const AI = {
+  score(tokens, colors, color, i, roll) {
+    const p = tokens[color][i];
+    const np = Rules.destination(p, roll);
+    const nIdx = np <= LAST_TRACK ? trackIndex(color, np) : -1;
+    const destSafe = np > LAST_TRACK || SAFE.has(nIdx);       // home column / triangle / safe square
+    const threatNow = Rules.threats(tokens, colors, color, p, false);
+    const threatDest = Rules.threats(tokens, colors, color, np, false);
+    let s = 0;
+    // 1. enter the Home Triangle
+    if (np === HOME_POS) s += 1000;
+    // 2. capture (further-along victims are worth more)
+    Rules.victimsAt(tokens, colors, color, np).forEach(v => { s += 500 + 4 * v.pos; });
+    // 3. escape danger
+    if (threatNow > 0) {
+      if (destSafe) s += 300; else if (threatDest === 0) s += 120;
+    }
+    // 4. exit the yard
+    if (p === YARD) s += 200;
+    // 5. advance — the furthest token that lands somewhere safe is favoured
+    s += np;
+    if (threatDest === 0) s += 30 + Math.max(p, 0);
+    // 6. penalties
+    if (p >= 0 && p <= LAST_TRACK && SAFE.has(trackIndex(color, p)) && !destSafe &&
+        Rules.threats(tokens, colors, color, p, true) > 0) s -= 150;     // leaving a safe square with a hunter behind
+    if (threatDest > 0) s -= 40 * threatDest;
+    return s;
+  },
+  choose(tokens, colors, color, roll, legal) {
+    let best = legal[0], bestScore = -Infinity;
+    legal.forEach(i => {
+      const sc = AI.score(tokens, colors, color, i, roll);
+      if (sc > bestScore) { bestScore = sc; best = i; }
+    });
+    return best;
+  }
+};
+
+/* =====================================================================
+   GAME STATE (finite state machine)
+   MENU -> WAITING_FOR_ROLL -> ROLLING -> SELECTING_TOKEN -> ANIMATING_MOVE -> (repeat) ... GAME_OVER
+   ===================================================================== */
+const AI_DELAY = 500, PASS_DELAY = 800, HOP_MS = 160, ROLL_MS = 420;
+const PLACES = ['1st', '2nd', '3rd', '4th'];
+
+const Game = {
+  fsm: 'MENU',
+  seats: {}, colors: [], tokens: {}, current: null,
+  roll: null, sixes: 0, legal: [], finished: [], gen: 0,
+  movingId: null,
+  rollValue() { return 1 + Math.floor(Math.random() * 6); }      // overridable (tests / Phase 2)
+};
+
+function setState(next) {
+  const old = Game.fsm;
+  Game.fsm = next;
+  document.body.dataset.state = next;
+  onStateChange(next, old);
+}
+// Timer that is silently dropped if the game was restarted in the meantime.
+function later(fn, ms) { const g = Game.gen; return setTimeout(() => { if (g === Game.gen) fn(); }, ms); }
+const nameOf = c => COLOR_META[c].name;
+const isHuman = c => Game.seats[c] === 'human';
+
+function nextActive(from) {
+  const n = Game.colors.length, start = Game.colors.indexOf(from);
+  for (let k = 1; k <= n; k++) {
+    const c = Game.colors[(start + k) % n];
+    if (!Game.finished.includes(c)) return c;
+  }
+  return from;
+}
+
+function newGame(seats) {
+  Game.gen++;
+  Game.seats = Object.assign({}, seats);
+  Game.colors = COLORS.filter(c => seats[c] !== 'off');
+  Game.tokens = {};
+  Game.colors.forEach(c => { Game.tokens[c] = [YARD, YARD, YARD, YARD]; });
+  Game.finished = [];
+  Game.current = Game.colors[0];
+  Game.sixes = 0; Game.roll = null; Game.legal = []; Game.movingId = null;
+  hideModal();
+  View.buildTokens();
+  startTurn('');
+}
+
+function startTurn(prefix) {
+  Game.roll = null; Game.legal = []; Game.movingId = null;
+  setState('WAITING_FOR_ROLL');
+  const c = Game.current;
+  View.setStatus((prefix ? prefix + ' ' : '') + nameOf(c) + (isHuman(c) ? ' — tap the dice to roll.' : ' (CPU) is thinking…'));
+  View.renderAll();
+  if (!isHuman(c)) later(rollDice, AI_DELAY);
+}
+
+function humanRoll() {
+  if (Game.fsm === 'WAITING_FOR_ROLL' && isHuman(Game.current)) rollDice();
+}
+
+function rollDice() {
+  if (Game.fsm !== 'WAITING_FOR_ROLL') return;
+  setState('ROLLING');
+  View.setStatus(nameOf(Game.current) + ' is rolling…');
+  View.renderAll();
+  const spin = n => {
+    if (n <= 0) return finishRoll();
+    View.renderDice(1 + Math.floor(Math.random() * 6));
+    later(() => spin(n - 1), ROLL_MS / 6);
+  };
+  spin(6);
+}
+
+function finishRoll() {
+  const c = Game.current;
+  const v = Game.rollValue();
+  Game.roll = v;
+  View.renderDice(v);
+  onDiceRoll(v, c);
+  Game.sixes = v === 6 ? Game.sixes + 1 : 0;
+
+  if (Game.sixes === 3) {                                   // three 6s in a row: forfeit and pass
+    View.setStatus(nameOf(c) + ' rolled a third 6 — turn forfeited!');
+    later(passTurn, PASS_DELAY);
+    return;
+  }
+  Game.legal = Rules.legalMoves(Game.tokens, c, v);
+  if (Game.legal.length === 0) {                            // auto-pass
+    View.setStatus(nameOf(c) + ' rolled ' + v + ' — no legal moves.');
+    later(passTurn, PASS_DELAY);
+    return;
+  }
+  setState('SELECTING_TOKEN');
+  if (isHuman(c)) {
+    View.setStatus(nameOf(c) + ' rolled ' + v + ' — choose a glowing token.');
+    View.renderAll();
+  } else {
+    View.setStatus(nameOf(c) + ' (CPU) rolled ' + v + '.');
+    View.renderAll();
+    later(() => {
+      if (Game.fsm !== 'SELECTING_TOKEN') return;
+      moveToken(AI.choose(Game.tokens, Game.colors, c, v, Game.legal));
+    }, AI_DELAY);
+  }
+}
+
+function passTurn() {
+  Game.sixes = 0;
+  Game.current = nextActive(Game.current);
+  startTurn('');
+}
+
+function humanPickToken(color, index) {
+  if (Game.fsm !== 'SELECTING_TOKEN') return;
+  if (color !== Game.current || !isHuman(color) || !Game.legal.includes(index)) return;
+  moveToken(index);
+}
+
+function moveToken(i) {
+  const c = Game.current, roll = Game.roll;
+  const from = Game.tokens[c][i];
+  const to = Rules.destination(from, roll);
+  const steps = [];
+  if (from === YARD) steps.push(0);
+  else for (let p = from + 1; p <= to; p++) steps.push(p);
+
+  setState('ANIMATING_MOVE');
+  Game.legal = [];
+  Game.movingId = c + '-' + i;
+
+  const hop = k => {
+    if (k >= steps.length) return afterMove(c, i, roll);
+    const prev = Game.tokens[c][i];
+    Game.tokens[c][i] = steps[k];
+    onTokenHop(c, i, prev, steps[k]);
+    View.renderAll();
+    later(() => hop(k + 1), HOP_MS);
+  };
+  hop(0);
+}
+
+function afterMove(c, i, roll) {
+  const pos = Game.tokens[c][i];
+  const victims = Rules.victimsAt(Game.tokens, Game.colors, c, pos);
+  const captured = victims.length > 0;
+  if (captured) {
+    victims.forEach(v => { Game.tokens[v.color][v.index] = YARD; });
+    onCapture(c, victims);
+  }
+  const reachedHome = pos === HOME_POS;
+  Game.movingId = null;
+  View.renderAll();
+
+  if (Rules.allHome(Game.tokens, c)) return handleFinish(c);
+
+  const bonus = roll === 6 || captured || reachedHome;
+  let msg = '';
+  if (captured) msg = nameOf(c) + ' captured ' + [...new Set(victims.map(v => nameOf(v.color)))].join(' & ') + '!';
+  else if (reachedHome) msg = nameOf(c) + ' got a token home!';
+  later(() => {
+    if (bonus) {
+      startTurn((msg ? msg + ' ' : '') + 'Bonus roll:');
+    } else {
+      Game.sixes = 0;
+      Game.current = nextActive(c);
+      startTurn(msg);
+    }
+  }, captured || reachedHome ? 450 : 120);
+}
+
+function handleFinish(c) {
+  Game.finished.push(c);
+  const place = Game.finished.length;
+  onVictory(c, place);
+  const remaining = Game.colors.filter(x => !Game.finished.includes(x));
+  setState('GAME_OVER');
+  View.renderAll();
+  if (remaining.length <= 1) {
+    if (remaining.length === 1) Game.finished.push(remaining[0]);
+    showFinalModal();
+  } else {
+    showPlaceModal(c, place);
+  }
+}
+
+function continueAfterFinish(from) {
+  hideModal();
+  Game.sixes = 0;
+  Game.current = nextActive(from);
+  startTurn('');
+}
+
+/* =====================================================================
+   VIEW — board construction + rendering
+   ===================================================================== */
+const $ = (s, r) => (r || document).querySelector(s);
+function el(tag, cls) { const e = document.createElement(tag); if (cls) e.className = cls; return e; }
+
+const STAR_SVG = fill => '<svg class="star" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,2 15.1,8.6 22.3,9.3 16.8,14 18.5,21.1 12,17.4 5.5,21.1 7.2,14 1.7,9.3 8.9,8.6" fill="' + fill + '" stroke="rgba(0,0,0,.55)" stroke-width="1.2" stroke-linejoin="round"/></svg>';
+
+function pawnSVG(c) {
+  return '<svg viewBox="0 0 100 100" aria-hidden="true">' +
+    '<ellipse cx="50" cy="90" rx="30" ry="7" fill="rgba(0,0,0,.28)"/>' +
+    '<ellipse cx="50" cy="80" rx="32" ry="12" fill="url(#lin-' + c + ')" stroke="rgba(0,0,0,.45)" stroke-width="2"/>' +
+    '<path d="M27 80 C30 66 40 58 43 46 L57 46 C60 58 70 66 73 80 Z" fill="url(#lin-' + c + ')" stroke="rgba(0,0,0,.4)" stroke-width="2"/>' +
+    '<ellipse cx="50" cy="46" rx="15" ry="5.5" fill="url(#lin-' + c + ')" stroke="rgba(0,0,0,.4)" stroke-width="1.5"/>' +
+    '<circle cx="50" cy="30" r="20" fill="url(#rad-' + c + ')" stroke="rgba(0,0,0,.4)" stroke-width="2"/>' +
+    '<ellipse cx="42" cy="21" rx="8" ry="5" transform="rotate(-30 42 21)" fill="#fff" opacity=".6"/>' +
+    '<ellipse cx="37" cy="74" rx="6" ry="2.5" fill="#fff" opacity=".28"/>' +
+    '</svg>';
+}
+
+const View = {
+  tokEls: {},
+
+  init() {
+    $('#defs-inner').innerHTML = COLORS.map(c => {
+      const m = COLOR_META[c];
+      return '<linearGradient id="lin-' + c + '" x1="0" y1="0" x2="1" y2="0">' +
+               '<stop offset="0" stop-color="' + m.d + '"/><stop offset=".38" stop-color="' + m.l + '"/>' +
+               '<stop offset=".6" stop-color="' + m.m + '"/><stop offset="1" stop-color="' + m.d + '"/></linearGradient>' +
+             '<radialGradient id="rad-' + c + '" cx=".36" cy=".3" r=".8">' +
+               '<stop offset="0" stop-color="' + m.l + '"/><stop offset=".45" stop-color="' + m.m + '"/>' +
+               '<stop offset="1" stop-color="' + m.d + '"/></radialGradient>';
+    }).join('');
+    this.buildBoard();
+    // dice
+    const dice = $('#dice');
+    dice.innerHTML = '<div class="dots">' + '<i></i>'.repeat(9) + '</div><div class="lbl">ROLL</div>';
+    dice.addEventListener('click', humanRoll);
+    $('#board').addEventListener('click', e => {
+      const b = e.target.closest('.token');
+      if (b) humanPickToken(b.dataset.color, +b.dataset.index);
+    });
+  },
+
+  buildBoard() {
+    const board = $('#board');
+    board.innerHTML = '';
+    COLORS.forEach(c => {
+      const [ox, oy] = YARD_ORIGIN[c];
+      const y = el('div', 'yard yard-' + c);
+      y.id = 'yard-' + c;
+      y.style.setProperty('--sc', COLOR_META[c].m);
+      y.style.gridColumn = (ox + 1) + ' / span 6';
+      y.style.gridRow = (oy + 1) + ' / span 6';
+      y.appendChild(el('div', 'yard-inner'));
+      YARD_SLOTS.forEach(s => {
+        const sl = el('div', 'slot');
+        sl.style.left = (s[0] / 6 * 100) + '%';
+        sl.style.top = (s[1] / 6 * 100) + '%';
+        y.appendChild(sl);
+      });
+      board.appendChild(y);
+    });
+
+    const cells = {};
+    for (let r = 0; r < 15; r++) {
+      for (let c = 0; c < 15; c++) {
+        const inYard = (r <= 5 || r >= 9) && (c <= 5 || c >= 9);
+        const inCentre = r >= 6 && r <= 8 && c >= 6 && c <= 8;
+        if (inYard || inCentre) continue;
+        const d = el('div', 'cell');
+        d.style.gridRow = String(r + 1);
+        d.style.gridColumn = String(c + 1);
+        board.appendChild(d);
+        cells[r + ',' + c] = d;
+      }
+    }
+    TRACK.forEach((rc, idx) => {
+      const d = cells[rc.join(',')];
+      d.classList.add('track');
+      const startColor = COLORS.find(c => START[c] === idx);
+      if (startColor) { d.classList.add('start-' + startColor); d.innerHTML = STAR_SVG('#fff'); }
+      else if (STAR_INDICES.includes(idx)) d.innerHTML = STAR_SVG('#ffd54f');
+    });
+    COLORS.forEach(c => HOME_COL[c].forEach(rc => cells[rc.join(',')].classList.add('hc-' + c)));
+
+    const centre = el('div', 'center');
+    centre.innerHTML = '<svg viewBox="0 0 3 3" preserveAspectRatio="none" aria-hidden="true">' +
+      '<polygon points="0,0 0,3 1.5,1.5" fill="' + COLOR_META.red.m + '"/>' +
+      '<polygon points="0,0 3,0 1.5,1.5" fill="' + COLOR_META.green.m + '"/>' +
+      '<polygon points="3,0 3,3 1.5,1.5" fill="' + COLOR_META.yellow.m + '"/>' +
+      '<polygon points="0,3 3,3 1.5,1.5" fill="' + COLOR_META.blue.m + '"/>' +
+      '<path d="M0 0L1.5 1.5M3 0L1.5 1.5M3 3L1.5 1.5M0 3L1.5 1.5" stroke="#fff" stroke-width=".06" fill="none"/>' +
+      '<rect x="0" y="0" width="3" height="3" fill="none" stroke="rgba(0,0,0,.45)" stroke-width=".05"/></svg>';
+    board.appendChild(centre);
+
+    const layer = el('div', 'tokens');
+    layer.id = 'tokens';
+    board.appendChild(layer);
+  },
+
+  buildTokens() {
+    const layer = $('#tokens');
+    layer.innerHTML = '';
+    this.tokEls = {};
+    COLORS.forEach(c => $('#yard-' + c).classList.toggle('off', !Game.colors.includes(c)));
+    const layout = this.layout();
+    Game.colors.forEach(c => {
+      for (let i = 0; i < 4; i++) {
+        const b = el('button', 'token');
+        b.type = 'button';
+        b.dataset.color = c; b.dataset.index = String(i);
+        b.setAttribute('aria-label', nameOf(c) + ' token ' + (i + 1));
+        b.tabIndex = -1;
+        b.innerHTML = pawnSVG(c);
+        this.place(b, layout[c + '-' + i]);          // positioned before insertion, so no fly-in
+        layer.appendChild(b);
+        this.tokEls[c + '-' + i] = b;
+      }
+    });
+  },
+
+  // Compute { id: {x, y, size, z} } in board-cell units, including smart stacking.
+  layout() {
+    const out = {}, groups = new Map(), homeN = {};
+    Game.colors.forEach(c => {
+      Game.tokens[c].forEach((pos, i) => {
+        const id = c + '-' + i;
+        if (pos === YARD) {
+          const o = YARD_ORIGIN[c], s = YARD_SLOTS[i];
+          out[id] = { x: o[0] + s[0], y: o[1] + s[1], size: 0.9, z: 1 };
+        } else if (pos === HOME_POS) {
+          const n = homeN[c] = (homeN[c] === undefined ? 0 : homeN[c] + 1);
+          const h = HOME_SPOT[c], off = (n - 1.5) * 0.32;
+          out[id] = { x: h.x + (h.ax === 'x' ? off : 0), y: h.y + (h.ax === 'y' ? off : 0), size: 0.34, z: 2 };
+        } else {
+          const rc = cellFor(c, pos), key = rc.join(',');
+          if (!groups.has(key)) groups.set(key, { r: rc[0], c: rc[1], list: [] });
+          groups.get(key).list.push(id);
+        }
+      });
+    });
+    groups.forEach(g => {
+      const n = g.list.length;
+      const cols = Math.ceil(Math.sqrt(n)), rows = Math.ceil(n / cols);
+      const size = n === 1 ? 0.84 : Math.min(0.84, 0.92 / cols);
+      const y0 = (1 - rows / cols) / 2;
+      g.list.forEach((id, k) => {
+        const row = Math.floor(k / cols), col = k % cols;
+        const inRow = Math.min(cols, n - row * cols);
+        const x0 = (1 - inRow / cols) / 2;
+        const x = g.c + x0 + (col + 0.5) / cols;
+        const y = g.r + y0 + (row + 0.5) / cols;
+        out[id] = { x, y, size, z: 3 + Math.round(y * 10) };
+      });
+    });
+    return out;
+  },
+
+  place(b, L) {
+    b.style.left = ((L.x - L.size / 2) / 15 * 100) + '%';
+    b.style.top = ((L.y - L.size / 2) / 15 * 100) + '%';
+    b.style.width = (L.size / 15 * 100) + '%';
+    b.style.height = (L.size / 15 * 100) + '%';
+    b.style.zIndex = String(L.z);
+  },
+
+  renderTokens() {
+    const layout = this.layout();
+    Game.colors.forEach(c => {
+      for (let i = 0; i < 4; i++) {
+        const id = c + '-' + i, b = this.tokEls[id];
+        if (!b) continue;
+        const L = layout[id];
+        this.place(b, L);
+        if (Game.movingId === id) b.style.zIndex = '200';
+        const movable = Game.fsm === 'SELECTING_TOKEN' && c === Game.current && Game.legal.includes(i);
+        b.classList.toggle('movable', movable);
+        b.classList.toggle('human', movable && isHuman(c));
+        b.tabIndex = movable && isHuman(c) ? 0 : -1;
+      }
+    });
+  },
+
+  renderDice(v) {
+    const dice = $('#dice');
+    const P = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+    const dots = dice.querySelectorAll('.dots i');
+    dots.forEach((d, k) => d.classList.toggle('on', !!v && P[v].includes(k)));
+    $('.lbl', dice).style.display = v ? 'none' : 'flex';
+  },
+
+  renderPlayers() {
+    const box = $('#players');
+    box.innerHTML = '';
+    Game.colors.forEach(c => {
+      const d = el('div', 'pcard');
+      d.style.setProperty('--c', COLOR_META[c].m);
+      if (c === Game.current && Game.fsm !== 'GAME_OVER') d.classList.add('active');
+      if (Game.finished.includes(c)) d.classList.add('done');
+      const home = Game.tokens[c].filter(p => p === HOME_POS).length;
+      const place = Game.finished.indexOf(c);
+      d.innerHTML = '<span class="dot"></span><span><b>' + nameOf(c) + '</b><small>' +
+        (isHuman(c) ? 'Player' : 'Computer') + ' · home ' + home + '/4' +
+        (place >= 0 ? ' · ' + PLACES[place] : '') + '</small></span>';
+      box.appendChild(d);
+    });
+  },
+
+  renderAll() {
+    const c = Game.current;
+    COLORS.forEach(k => $('#yard-' + k).classList.toggle('active', Game.colors.includes(k) && k === c && Game.fsm !== 'GAME_OVER'));
+    const dice = $('#dice');
+    if (c) dice.style.setProperty('--c', COLOR_META[c].m);
+    const ready = Game.fsm === 'WAITING_FOR_ROLL' && isHuman(c);
+    dice.disabled = !ready;
+    dice.classList.toggle('ready', ready);
+    if (Game.fsm === 'WAITING_FOR_ROLL') this.renderDice(null);
+    else if (Game.roll) this.renderDice(Game.roll);
+    this.renderPlayers();
+    this.renderTokens();
+  },
+
+  setStatus(msg) { $('#status').textContent = msg; }
+};
+
+/* =====================================================================
+   MODAL
+   ===================================================================== */
+function showModal(title, bodyHTML, buttons) {
+  $('#modal-title').textContent = title;
+  $('#modal-body').innerHTML = bodyHTML;
+  const acts = $('#modal-acts');
+  acts.innerHTML = '';
+  buttons.forEach(b => {
+    const btn = el('button', 'btn' + (b.primary ? ' primary' : ''));
+    btn.textContent = b.label;
+    btn.addEventListener('click', b.onClick);
+    acts.appendChild(btn);
+  });
+  $('#modal').classList.remove('hidden');
+}
+function hideModal() { $('#modal').classList.add('hidden'); }
+
+function showPlaceModal(c, place) {
+  showModal(nameOf(c) + ' finishes ' + PLACES[place - 1] + '!',
+    '<p>All four ' + nameOf(c) + ' tokens are home.</p><p>Keep playing for the remaining places?</p>',
+    [
+      { label: 'Continue playing', primary: true, onClick: () => continueAfterFinish(c) },
+      { label: 'Restart game', onClick: () => newGame(Game.seats) },
+      { label: 'Main menu', onClick: toMenu }
+    ]);
+}
+function showFinalModal() {
+  const list = Game.finished.map(c => '<li><b style="color:' + COLOR_META[c].m + '">' + nameOf(c) + '</b>' +
+    (isHuman(c) ? '' : ' (CPU)') + '</li>').join('');
+  showModal(nameOf(Game.finished[0]) + ' wins!', '<p>Final standings</p><ol>' + list + '</ol>',
+    [
+      { label: 'Play again', primary: true, onClick: () => newGame(Game.seats) },
+      { label: 'Main menu', onClick: toMenu }
+    ]);
+}
+
+/* =====================================================================
+   SETUP SCREEN
+   ===================================================================== */
+const Setup = {
+  seats: { red: 'human', green: 'computer', yellow: 'computer', blue: 'computer' },
+  active() { return COLORS.filter(c => this.seats[c] !== 'off'); },
+  preset(n) {
+    const sets = { 2: ['red', 'yellow'], 3: ['red', 'green', 'yellow'], 4: COLORS };
+    COLORS.forEach(c => {
+      if (sets[n].includes(c)) { if (this.seats[c] === 'off') this.seats[c] = 'computer'; }
+      else this.seats[c] = 'off';
+    });
+    this.render();
+  },
+  // Two-player games always sit in opposite corners.
+  normalize() {
+    const a = this.active();
+    if (a.length === 2 && OPPOSITE[a[0]] !== a[1]) {
+      const t0 = this.seats[a[0]], t1 = this.seats[a[1]];
+      COLORS.forEach(c => { this.seats[c] = 'off'; });
+      this.seats[a[0]] = t0; this.seats[OPPOSITE[a[0]]] = t1;
+    }
+  },
+  render() {
+    const n = this.active().length;
+    const pre = $('#presets');
+    pre.innerHTML = '';
+    [2, 3, 4].forEach(k => {
+      const b = el('button', 'chip' + (n === k ? ' on' : ''));
+      b.textContent = k + ' Players';
+      b.addEventListener('click', () => this.preset(k));
+      pre.appendChild(b);
+    });
+    const list = $('#seat-list');
+    list.innerHTML = '';
+    COLORS.forEach(c => {
+      const row = el('div', 'seat');
+      row.style.setProperty('--c', COLOR_META[c].m);
+      row.innerHTML = '<span class="dot"></span><span class="nm">' + nameOf(c) + '</span>';
+      const seg = el('div', 'seg');
+      [['human', 'Human'], ['computer', 'Computer'], ['off', 'Off']].forEach(o => {
+        const b = el('button', this.seats[c] === o[0] ? 'on' : '');
+        b.textContent = o[1];
+        b.addEventListener('click', () => { this.seats[c] = o[0]; this.render(); });
+        seg.appendChild(b);
+      });
+      row.appendChild(seg);
+      list.appendChild(row);
+    });
+    const msg = $('#setup-msg');
+    if (n < 2) { msg.textContent = 'Pick at least 2 players.'; msg.className = 'hint err'; }
+    else if (n === 2) { msg.textContent = 'Two-player games use opposite corners (Red vs Yellow).'; msg.className = 'hint'; }
+    else { msg.textContent = n + ' players · clockwise: Red → Green → Yellow → Blue.'; msg.className = 'hint'; }
+    $('#btn-start').disabled = n < 2;
+  }
+};
+
+function toMenu() {
+  Game.gen++;                       // cancels every pending timer
+  setState('MENU');
+  hideModal();
+  $('#game-screen').classList.add('hidden');
+  $('#start-screen').classList.remove('hidden');
+  Setup.render();
+}
+
+/* =====================================================================
+   BOOT
+   ===================================================================== */
+(function boot() {
+  const errs = verifyGeometry();
+  if (errs.length) console.warn('Ludo geometry problems:', errs);
+  View.init();
+  Setup.render();
+  $('#btn-start').addEventListener('click', () => {
+    if (Setup.active().length < 2) return;
+    Setup.normalize();
+    Setup.render();
+    $('#start-screen').classList.add('hidden');
+    $('#game-screen').classList.remove('hidden');
+    newGame(Setup.seats);
+  });
+  $('#btn-restart').addEventListener('click', () => newGame(Game.seats));
+  $('#btn-menu').addEventListener('click', toMenu);
+  document.addEventListener('keydown', e => {
+    if (e.code !== 'Space' || !$('#modal').classList.contains('hidden')) return;
+    if (document.activeElement && document.activeElement.classList.contains('token')) return;
+    if (Game.fsm === 'WAITING_FOR_ROLL' && isHuman(Game.current)) { e.preventDefault(); humanRoll(); }
+  });
+  // Exposed for debugging and Phase 2 integration / tests.
+  window.Ludo = { Game, Rules, AI, View, Setup, TRACK, START, SAFE, HOME_COL, verifyGeometry, newGame, trackIndex, cellFor };
+})();
+</script>
+</body>
+</html>
