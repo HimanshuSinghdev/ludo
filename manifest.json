@@ -2,17 +2,32 @@
   "id": "./index.html",
   "name": "Ludo Offline",
   "short_name": "Ludo",
-  "description": "Classic Ludo for two to four players. Plays fully offline.",
+  "description": "Classic Ludo for two to four players. Install it and play fully offline.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "any",
-  "background_color": "#23262c",
-  "theme_color": "#23262c",
-  "categories": ["games"],
+  "background_color": "#0b141a",
+  "theme_color": "#0b141a",
+  "categories": ["games", "entertainment"],
   "icons": [
     { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "./icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Quick game",
+      "short_name": "Quick game",
+      "description": "Start a game against the computer",
+      "url": "./index.html?quick=1",
+      "icons": [{ "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ],
+  "screenshots": [
+    { "src": "./screenshots/home.png", "sizes": "540x960", "type": "image/png", "form_factor": "narrow", "label": "Home screen" },
+    { "src": "./screenshots/match.png", "sizes": "540x960", "type": "image/png", "form_factor": "narrow", "label": "A match in progress" },
+    { "src": "./screenshots/wide.png", "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Match on a large screen" }
   ]
 }
