@@ -158,7 +158,23 @@ button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 .actions{width:min(100%,460px);margin:0 auto;padding:22px 20px 14px;display:flex;flex-direction:column;gap:12px}
 .row2{display:flex;gap:12px}
 .row2 .btn{flex:1}
-.credit{margin:0;padding:6px 0 calc(14px + 0px);text-align:center;font-size:12.5px;color:var(--text-faint)}
+.credit{margin:0;padding:6px 0 14px;font-size:12.5px;color:var(--text-faint)}
+
+/* signature: gold lines draw outward, the letters settle in, then a slow glint travels along the text */
+.credit,.footer{display:flex;align-items:center;justify-content:center;gap:12px}
+.credit::before,.credit::after,.footer::before,.footer::after{content:"";flex:0 0 26px;height:1px;transform:scaleX(0);
+  background:linear-gradient(90deg,transparent,var(--gold-400))}
+.credit::after,.footer::after{background:linear-gradient(270deg,transparent,var(--gold-400));transform-origin:left}
+.credit::before,.footer::before{transform-origin:right}
+.sig{letter-spacing:.04em;opacity:0;background:linear-gradient(100deg,var(--text-faint) 0%,var(--text-faint) 38%,var(--gold-200) 50%,var(--text-faint) 62%,var(--text-faint) 100%);
+  background-size:260% 100%;background-position:120% 0;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;white-space:nowrap}
+body.ready #home .credit::before,body.ready #home .credit::after,
+#game.active .footer::before,#game.active .footer::after,
+#modal.show .credit::before,#modal.show .credit::after{animation:sigline .9s var(--ease-out) .5s forwards}
+body.ready #home .sig,#game.active .sig,#modal.show .sig{animation:sigin 1.1s var(--ease-out) .35s forwards,glint 5.5s ease-in-out 2s infinite}
+@keyframes sigline{to{transform:scaleX(1)}}
+@keyframes sigin{from{opacity:0;letter-spacing:.34em}to{opacity:1;letter-spacing:.04em}}
+@keyframes glint{0%,55%{background-position:120% 0}100%{background-position:-20% 0}}
 .resume{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:center;padding:14px 16px;border-radius:var(--r-lg);
   border:1px solid var(--line-strong);background:linear-gradient(180deg,rgba(243,220,156,.12),rgba(243,220,156,.04));
   box-shadow:0 12px 30px rgba(0,0,0,.35)}
@@ -436,7 +452,7 @@ body.ready .rise{animation:rise .7s var(--ease-out) both;animation-delay:calc(va
         <button id="btn-how" class="btn btn-ghost btn-sm" type="button">How to play</button>
         <button id="btn-install" class="btn btn-ghost btn-sm hidden" type="button">Install app</button>
       </div>
-      <p class="credit rise" style="--n:7">Created by Himanshu Singh</p>
+      <p class="credit rise" style="--n:7"><span class="sig">Created by Himanshu Singh</span></p>
     </div>
   </section>
 
@@ -467,7 +483,7 @@ body.ready .rise{animation:rise .7s var(--ease-out) both;animation-delay:calc(va
         <div id="dice-hint" class="dock-hint"></div>
       </div>
     </div>
-    <div class="footer" id="game-footer">Created by Himanshu Singh</div>
+    <div class="footer" id="game-footer"><span class="sig">Created by Himanshu Singh</span></div>
   </section>
 </main>
 
@@ -517,7 +533,7 @@ body.ready .rise{animation:rise .7s var(--ease-out) both;animation-delay:calc(va
     <h3 id="modal-title"></h3>
     <div id="modal-body"></div>
     <div class="acts" id="modal-acts"></div>
-    <p class="credit">Created by Himanshu Singh</p>
+    <p class="credit"><span class="sig">Created by Himanshu Singh</span></p>
   </div>
 </div>
 <div id="confetti" aria-hidden="true"></div>

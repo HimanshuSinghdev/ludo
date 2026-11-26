@@ -1,6 +1,6 @@
 /* Ludo Offline service worker — versioned cache-first.
    To ship an update, bump CACHE_NAME so old caches are removed on activate. */
-const CACHE_NAME = 'ludo-offline-v2';
+const CACHE_NAME = 'ludo-offline-v3';
 const PRECACHE = [
   './',
   './index.html',
