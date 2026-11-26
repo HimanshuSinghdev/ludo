@@ -1610,6 +1610,7 @@ const Sheets = {
     s.classList.remove('open'); s.setAttribute('aria-hidden', 'true'); s.style.transform = '';
     $('#scrim').classList.remove('show');
     this.current = null;
+    if (typeof Updater !== 'undefined') setTimeout(() => Updater.apply(), 400);
   },
   // Drag the grip down to dismiss.
   bindDrag(sheet) {
@@ -1804,6 +1805,7 @@ const UI = {
     if (this.view === 'game') Nav.leaveGame();
     this.show('home');
     this.renderHome();
+    setTimeout(() => Updater.apply(), 600);           // an update that arrived mid-match applies now
   },
   confirmRestart() {
     showModal('Restart this match?', '<p>All tokens go back to their yards.</p>', [
@@ -1909,13 +1911,56 @@ function buildAmbient() {
   window.Ludo = { Game, Rules, AI, View, Setup, Sound, Haptics, Persist, UI, Nav, Sheets, Toast, TRACK, START, SAFE, HOME_COL, verifyGeometry, newGame, restoreGame, trackIndex, cellFor };
 })();
 
+/* =====================================================================
+   AUTO-UPDATE — new deploys reach players without any action from them.
+   The service worker refreshes its files on every launch and tells the page when
+   index.html changed. The page then reloads itself at a safe moment (home
+   screen, nothing open), never in the middle of a match.
+   ===================================================================== */
+const Updater = {
+  pending: false, reg: null, reloading: false,
+  safe() {
+    return document.body.classList.contains('ready') && UI.view === 'home' && !Sheets.current && !modalOpen() && Game.fsm === 'MENU';
+  },
+  reload() { if (this.reloading) return; this.reloading = true; location.reload(); },
+  // Called whenever a newer version is known to be ready.
+  found() {
+    if (this.pending) return;
+    this.pending = true;
+    if (this.safe()) return this.apply();
+    Toast.show('A new version is ready', { label: 'Update now', onClick: () => this.reload(), ms: 12000 });
+  },
+  // Called again whenever the player returns to a quiet screen.
+  apply() {
+    if (!this.pending || this.reloading) return;
+    if (!this.safe()) return;
+    Toast.show('Updating to the latest version…', { ms: 2000 });
+    setTimeout(() => this.reload(), 900);
+  },
+  // Ask the browser and the service worker to look for a new version now.
+  check() {
+    try { if (this.reg) this.reg.update(); } catch (e) {}
+    try { fetch('./index.html', { cache: 'no-cache' }).catch(() => {}); } catch (e) {}    // goes through the worker, which compares it
+  },
+  init(reg) {
+    this.reg = reg;
+    navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'content-updated') this.found(); });
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') this.check(); });
+    window.addEventListener('online', () => this.check());
+    setInterval(() => this.check(), 30 * 60 * 1000);
+  }
+};
+
+window.Ludo.Updater = Updater;
+
 // Offline support: register after load, only where service workers exist.
 window.addEventListener('load', () => {
   if (!('serviceWorker' in navigator)) return;
   const hadController = !!navigator.serviceWorker.controller;
-  navigator.serviceWorker.register('./sw.js').catch(err => console.warn('Service worker not registered:', err));
+  navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(reg => Updater.init(reg))
+    .catch(err => console.warn('Service worker not registered:', err));
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (hadController) Toast.show('Updated to the latest version', { label: 'Reload', onClick: () => location.reload(), ms: 9000 });
+    if (hadController) Updater.found();                 // a new worker took over: new files are in the cache
     else Toast.show('Ready to play offline');
   });
 });

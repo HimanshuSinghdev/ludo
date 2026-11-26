@@ -51,9 +51,16 @@ To run it locally, serve the folder with any static server, for example `python3
 2. In the repository, open **Settings → Pages**, choose **Deploy from a branch**, then `main` and `/ (root)`.
 3. Open the published link. All paths in the manifest and service worker are relative, so it works from a repository subpath.
 
-### Shipping an update
+### Updates reach players automatically
 
-Installed copies keep serving the cached version until the cache name changes. When you edit any file, bump `CACHE_NAME` in `sw.js` (`ludo-offline-v3` → `ludo-offline-v4`). Players then see an "Updated to the latest version" message with a Reload button.
+Just push to `main`. You do not need to change anything else.
+
+- Every time the app opens (and again whenever it returns to the foreground, comes back online, or every 30 minutes), the service worker fetches the latest files from the server in the background and compares `index.html` with its cached copy.
+- If it changed, the app updates itself at a safe moment: straight away on the home screen, or as soon as the player leaves a match. A match in progress is never interrupted, and it is saved, so nothing is lost either way.
+- The app still opens instantly and works offline, because it always starts from the cached copy.
+- Changing only the icons, manifest or screenshots is picked up on the next launch without a reload.
+
+`CACHE_NAME` in `sw.js` (`ludo-offline-v3`) only needs bumping if you want to throw away every cached file and start clean, for example after renaming or removing files.
 
 ## How the code is organised
 
