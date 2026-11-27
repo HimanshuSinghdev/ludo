@@ -193,27 +193,31 @@ body.ready .rise{animation:rise .7s var(--ease-out) both;animation-delay:calc(va
 
 /* ---------- dice (shared) ---------- */
 .dice{--ds:62px;position:relative;flex:none;width:calc(var(--ds) * 1.6);height:calc(var(--ds) * 1.6);padding:0;border:0;background:transparent;border-radius:20px;cursor:default}
-.dice .scene{position:absolute;inset:0;display:grid;place-items:center;perspective:520px}
-.dice .arc,.dice .tilt,.dice .cube{position:relative;width:var(--ds);height:var(--ds);transform-style:preserve-3d}
+.dice .scene{position:absolute;left:-50%;top:-50%;width:200%;height:200%;display:grid;place-items:center;perspective:1040px;transform:scale(.5)}
+.dice .arc,.dice .tilt,.dice .cube{position:relative;width:var(--s);height:var(--s);transform-style:preserve-3d}
+.dice{--s:calc(var(--ds) * 2)}
 .dice .arc{position:absolute}
 .dice .tilt{transform:rotateX(-18deg) rotateY(24deg)}
 .dice .cube{position:absolute;transition:transform var(--roll-ms) cubic-bezier(.18,.8,.22,1)}
-.dice .face{position:absolute;inset:0;border-radius:calc(var(--ds) * .2);display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:calc(var(--ds) * .17);
-  background:linear-gradient(150deg,#fbf5e4 0%,#e8dcbc 60%,#d4c59b 100%);
-  box-shadow:inset 0 0 0 1px rgba(80,55,20,.22),inset 0 -6px 10px rgba(110,80,30,.14),inset 0 4px 6px rgba(255,255,255,.7)}
-.dice .face i{border-radius:50%}
-.dice .face i.on{background:radial-gradient(circle at 36% 30%,#4a4f57,#1b1e23 72%);box-shadow:inset 0 1px 2px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.5)}
+.dice .core{position:absolute;inset:6%;background:#d9cba3;backface-visibility:hidden}
+.dice .face{--sh:0;--sp:0;position:absolute;inset:0;border-radius:calc(var(--s) * .13);display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:calc(var(--s) * .17);overflow:hidden;
+  background:linear-gradient(145deg,#fdf8ea 0%,#f1e7c8 55%,#e2d5ae 100%);
+  box-shadow:inset 0 0 0 calc(var(--s) * .012) rgba(120,90,40,.28),inset 0 calc(var(--s) * -.05) calc(var(--s) * .08) rgba(110,80,30,.16),inset 0 calc(var(--s) * .04) calc(var(--s) * .05) rgba(255,255,255,.75)}
+.dice .face::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 30% 22%,rgba(255,255,255,calc(var(--sp) * .9)),transparent 62%),rgba(30,18,0,var(--sh))}
+.dice .face i{border-radius:50%;position:relative;z-index:1}
+.dice .face i.on{background:radial-gradient(circle at 40% 36%,#3a3f47,#15181c 70%);box-shadow:inset 0 calc(var(--s) * .014) calc(var(--s) * .02) rgba(0,0,0,.85),0 calc(var(--s) * .01) 0 rgba(255,255,255,.65)}
 .dice .face.f1 i.on{background:radial-gradient(circle at 36% 30%,#ff9a8e,var(--c-red) 55%,var(--c-red-d));width:150%;height:150%;margin:-25%}
 .dice .dshadow{position:absolute;left:50%;bottom:7%;width:calc(var(--ds) * .95);height:calc(var(--ds) * .22);margin-left:calc(var(--ds) * -.475);
   border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.55),transparent);transform-origin:center}
 .dice.throwing .arc{animation:throw var(--roll-ms) ease-out}
 .dice.throwing .dshadow{animation:throwShadow var(--roll-ms) ease-out}
-@keyframes throw{0%{transform:translateY(0) scale(1)}24%{transform:translateY(-42px) scale(1.14)}48%{transform:translateY(0) scale(1)}60%{transform:translateY(-15px) scale(1.04)}74%{transform:translateY(0) scale(1)}86%{transform:translateY(-4px)}100%{transform:translateY(0)}}
+@keyframes throw{0%{transform:translateY(0) scale(1)}24%{transform:translateY(-84px) scale(1.14)}48%{transform:translateY(0) scale(1)}60%{transform:translateY(-30px) scale(1.04)}74%{transform:translateY(0) scale(1)}86%{transform:translateY(-4px)}100%{transform:translateY(0)}}
 @keyframes throwShadow{0%{transform:scale(1);opacity:1}24%{transform:scale(.55);opacity:.4}48%{transform:scale(1.05);opacity:1}60%{transform:scale(.8);opacity:.6}74%{transform:scale(1);opacity:1}100%{transform:scale(1)}}
 .dice.ready{cursor:pointer}
 .dice.ready .arc{animation:nudge 1.8s ease-in-out infinite}
 .dice.ready::before{content:"";position:absolute;inset:4px;border-radius:24px;border:2px solid var(--turn);box-shadow:0 0 22px var(--turn);animation:ring 1.6s ease-out infinite;pointer-events:none}
-@keyframes nudge{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes nudge{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 @keyframes ring{0%{opacity:.85;transform:scale(.82)}100%{opacity:0;transform:scale(1.18)}}
 .dice.idle .arc{animation:nudge 3.6s ease-in-out infinite}
 .dice.idle .tilt{animation:spinIdle 14s linear infinite}
@@ -1152,7 +1156,7 @@ const DIE_FACE = { 1: [0, 0], 2: [0, -90], 3: [-90, 0], 4: [90, 0], 5: [0, 90], 
 
 // A 3D CSS die. root = element that receives the .throwing class.
 function makeDice(root) {
-  const half = 'calc(var(--ds) / 2)';
+  const half = 'calc(var(--s) / 2)';
   const place = { 1: '', 6: 'rotateY(180deg) ', 2: 'rotateY(90deg) ', 5: 'rotateY(-90deg) ', 3: 'rotateX(90deg) ', 4: 'rotateX(-90deg) ' };
   let faces = '';
   for (let v = 1; v <= 6; v++) {
@@ -1160,9 +1164,38 @@ function makeDice(root) {
     for (let k = 0; k < 9; k++) pips += '<i' + (PIPS[v].includes(k) ? ' class="on"' : '') + '></i>';
     faces += '<div class="face f' + v + '" style="transform:' + place[v] + 'translateZ(' + half + ')">' + pips + '</div>';
   }
-  root.innerHTML = '<div class="dshadow"></div><div class="scene"><div class="arc"><div class="tilt"><div class="cube">' + faces + '</div></div></div></div>';
-  const cube = $('.cube', root);
-  const d = { root, cube, state: { x: 0, y: 0 },
+  let core = '';
+  for (let v = 1; v <= 6; v++) core += '<div class="core" style="transform:' + place[v] + 'translateZ(calc(var(--s) / 2 - 3px))"></div>';
+  root.innerHTML = '<div class="dshadow"></div><div class="scene"><div class="arc"><div class="tilt"><div class="cube">' + core + faces + '</div></div></div></div>';
+  const cube = $('.cube', root), tilt = $('.tilt', root), faceEls = $$('.face', root);
+  // Face normals in cube space, matching the placement transforms above.
+  const NORM = [[0,0,1],[1,0,0],[0,-1,0],[0,1,0],[-1,0,0],[0,0,-1]];   // faces 1..6
+  const LIGHT = (() => { const l = [-0.45, -0.6, 0.66], m = Math.hypot(...l); return l.map(x => x / m); })();
+  const mat = el => { const t = getComputedStyle(el).transform; if (!t || t === 'none') return [1,0,0,0,1,0,0,0,1];
+    const n = t.match(/-?[\d.e-]+/g).map(Number);
+    return n.length === 16 ? [n[0],n[1],n[2],n[4],n[5],n[6],n[8],n[9],n[10]] : [n[0],n[1],0,n[2],n[3],0,0,0,1]; };
+  // Shade each face by how directly it faces the light, so turning faces visibly change.
+  function light() {
+    const T = mat(tilt), C = mat(cube);     // column-major 3x3: m[col*3+row]
+    const ap = (m, v) => [m[0]*v[0]+m[3]*v[1]+m[6]*v[2], m[1]*v[0]+m[4]*v[1]+m[7]*v[2], m[2]*v[0]+m[5]*v[1]+m[8]*v[2]];
+    faceEls.forEach((el, i) => {
+      const w = ap(T, ap(C, NORM[i]));
+      const dot = w[0]*LIGHT[0] + w[1]*LIGHT[1] + w[2]*LIGHT[2];
+      const facing = w[2];                    // toward the viewer
+      el.style.setProperty('--sh', Math.min(.2, Math.max(0, .09 - dot * .1 + (facing < .15 ? .04 : 0))).toFixed(3));
+      el.style.setProperty('--sp', Math.max(0, dot - .55).toFixed(3));
+    });
+  }
+  let looping = false;
+  function loop() {
+    if (looping) return; looping = true;
+    (function f() {
+      light();
+      if (root.classList.contains('throwing') || root.classList.contains('idle')) requestAnimationFrame(f);
+      else looping = false;
+    })();
+  }
+  const d = { root, cube, light, loop, state: { x: 0, y: 0 },
     set(v) {
       const f = DIE_FACE[v];
       this.state = { x: f[0], y: f[1] };
@@ -1170,6 +1203,7 @@ function makeDice(root) {
       cube.style.transform = 'rotateX(' + f[0] + 'deg) rotateY(' + f[1] + 'deg)';
       void cube.offsetWidth;
       cube.style.transition = '';
+      light();
     },
     // Tumble through a few full turns and settle on face v.
     tumble(v) {
@@ -1180,10 +1214,12 @@ function makeDice(root) {
       root.classList.remove('throwing');
       void root.offsetWidth;
       root.classList.add('throwing');
-      setTimeout(() => root.classList.remove('throwing'), ROLL_MS + 60);
+      setTimeout(() => { root.classList.remove('throwing'); light(); }, ROLL_MS + 60);
+      loop();
     }
   };
   d.set(1);
+  if (root.classList.contains('idle')) loop();
   return d;
 }
 
